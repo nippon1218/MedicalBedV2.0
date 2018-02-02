@@ -923,11 +923,11 @@ ARM Macro Assembler    Page 15
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
 erwork --depend=..\obj\startup_stm32f429xx.d -o..\obj\startup_stm32f429xx.o -I"
-F:\STM32work\try\2018\1\29\程序20180124串口2 - 光电-用\USER\RTE" -IE:\MDK5\ARM\
-PACK\Keil\STM32F4xx_DFP\2.9.0 -IE:\MDK5\ARM\CMSIS\Include -IE:\MDK5\ARM\PACK\Ke
-il\STM32F4xx_DFP\2.9.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --predefine="_
-_UVISION_VERSION SETA 514" --predefine="STM32F429xx SETA 1" --list=..\obj\start
-up_stm32f429xx.lst ..\CORE\startup_stm32f429xx.s
+F:\STM32work\try\2018\2git\MedicalBed\程序20180124串口2 - 光电-用\USER\RTE" -IE
+:\MDK5\ARM\PACK\Keil\STM32F4xx_DFP\2.9.0 -IE:\MDK5\ARM\CMSIS\Include -IE:\MDK5\
+ARM\PACK\Keil\STM32F4xx_DFP\2.9.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include --p
+redefine="__UVISION_VERSION SETA 514" --predefine="STM32F429xx SETA 1" --list=.
+.\obj\startup_stm32f429xx.lst ..\CORE\startup_stm32f429xx.s
 
 
 
