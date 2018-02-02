@@ -2459,7 +2459,7 @@ void Fun_ZF(void)
 	u16 arr_now;                 //当前一次运行脉冲数,用于脉冲累计
 	u8 len;                      //接收的字符串长度
 	static u8 motor5_run_flag;   //判断小侧翻是否已经动作，若动作该位置1 
-	
+	u8 GDFlag=0;
 	//实现上位机实时显示护理床当前运动状态
 	static u8 k=0,m=0;
 	u8 j=0,n=0;
@@ -2538,7 +2538,7 @@ void Fun_ZF(void)
 //						}	             
 //					}																										
 					//发送动画指令
-				    arr_send1=__HAL_TIM_GET_COUNTER(&TIM10_Handler);		//获取当前寄存器运行装载值
+				  arr_send1=__HAL_TIM_GET_COUNTER(&TIM10_Handler);		//获取当前寄存器运行装载值
 					n=arr_send1/(Ang_To_Arr_ZYFS(ZF_Lim)/9);
 					m=ZCF_Pic;
 					if(	m!=n)
@@ -2597,7 +2597,7 @@ void Fun_ZF(void)
 			if(ZF_Runed>0)
 			{			   
 				//345联动左翻起	
-			     direct=0;			//设置运行方向标志
+			   direct=0;			//设置运行方向标志
 				 ZF_Dir_flag=0;		//设置方向状态标志位
 				 if(M345_End==1)
 				 {
@@ -2610,7 +2610,7 @@ void Fun_ZF(void)
 				 MotorStart(4,1,(1400-1)*1.2,25-1);		 //4号电机启动
 				 MotorStart(5,1,1400-1,25-1);			 //5号电机启动
 				 u2_printf("*%s*M345*FFF*000*/**",RX_BUF);//串口2反馈
-			     TIM10_Init(ZF_Runed,65000);			          //打开定时器，定时器周期=(freq1*freq_time1_1)/90mhz
+			   TIM10_Init(ZF_Runed,65000);			          //打开定时器，定时器周期=(freq1*freq_time1_1)/90mhz
 			}
 		}
 		memset(USART2_RX_BUF,0,USART2_MAX_RECV_LEN);	//清空串口2接收数组		
@@ -2627,18 +2627,12 @@ void Fun_ZF(void)
 				{
 					delay_us(100);
 					if((0==GD3_CS)&&(1==GD4_CS))
-					{
-						MotorStop(3);
-					}
+					{	MotorStop(3);	}			
 					if((1==GD3_CS)&&(0==GD4_CS))
-					{
-						MotorStop(4);
-					}
+					{	MotorStop(4); }				
 					if((0==GD3_CS)&&(0==GD4_CS))
 					{
-						u2_printf("GD3CS");
-						delay_ms(200);
-						u2_printf("GD4CS");
+						GDFlag=1;
 						break;					
 					}
 				}
@@ -2648,13 +2642,9 @@ void Fun_ZF(void)
 					if(((0==GD3_ZFZZ)||(0==GD4_ZFZZ)))
 					{
 						if(0==GD3_ZFZZ)
-						{
-							u2_printf("GD3ZFZZ");
-						}
+						{	u2_printf("GD3ZFZZ");	}				
 						if(0==GD4_ZFZZ)
-						{
-							u2_printf("GD4ZFZZ");
-						}
+						{	u2_printf("GD4ZFZZ");		}
 					}						
 					break;
 				}
@@ -2756,9 +2746,21 @@ void Fun_ZF(void)
 					}				
 				}
 			}
-			MotorStop(3);  		
-			MotorStop(4);  		
-			MotorStop(5);  
+			if((GDFlag==1)&&(ZF_Flag==1))
+			{
+				MotorStop(3);  MotorStop(4);  MotorStop(5);					
+				MotorStart(3,1,1400-1,25-1);			     //3号电机启动
+				MotorStart(4,1,(1400-1)*1.2,25-1);		 //4号电机启动	
+/******************修改下处的参数************************/				
+				M345DelayStop(M3GDL_BC,M4GDL_BC,0);
+/******************修改上处的参数************************/						
+				u2_printf("GD3CS");
+				delay_ms(200);
+				u2_printf("GD4CS");			
+			}
+			else
+			{	MotorStop(3);  MotorStop(4);  MotorStop(5); 	}	
+
 			u2_printf("*%s*M345*TTT*000*/**",RX_BUF);		//串口2反馈	
 			TIM10_Stop();          //关闭定时器
 			//判断复位
@@ -3077,7 +3079,7 @@ void Fun_YF(void)
 	u16 arr_now;        //当前一次运行脉冲数，用于脉冲累计
 	u8 len;             //接收的字符串长度	
 	static u8 motor5_run_flag;  //小侧翻已运行标志位	
-	
+	u8 GDFlag;
 	//实现上位机实时显示护理床当前运动状态 
 	static u16 k=0,m=0;
 	static u8 M345R_Start=0;  //345电机从初始位置运行
@@ -3239,18 +3241,14 @@ void Fun_YF(void)
 				{
 					delay_us(100);
 					if((0==GD3_CS)&&(1==GD4_CS))
-					{
-						MotorStop(3);  
-					}
+					{	MotorStop(3); 	}
+					
 					if((1==GD3_CS)&&(0==GD4_CS))
-					{
-						MotorStop(4);
-					}
+					{	MotorStop(4);	} 
+					
 					if((0==GD3_CS)&&(0==GD4_CS))
-					{
-						u2_printf("GD3CS");
-						delay_ms(200);
-						u2_printf("GD4CS");
+					{	
+						GDFlag=1;
 						break;					
 					}
 				}
@@ -3368,10 +3366,20 @@ void Fun_YF(void)
 					}				
 				}
 			}
-			//电机停止
-			MotorStop(3); 				
-			MotorStop(4); 	
-			MotorStop(5);   
+			if((GDFlag==1)&&(YF_Flag==1))
+			{	MotorStop(3);  MotorStop(4);  MotorStop(5);				
+				MotorStart(3,0,(1400-1)*2,25-1);			     //3号电机启动
+				MotorStart(4,0,(1400-1)*0.8,25-1);	 		 	 //4号电机启动
+/******************修改下处的参数************************/				
+				M345DelayStop(M3GDR_BC,M4GDR_BC,0);
+/******************修改上处的参数************************/						
+				u2_printf("GD3CS");
+				delay_ms(200);
+				u2_printf("GD4CS");	
+			}
+			else
+			{	MotorStop(3);  MotorStop(4);  MotorStop(5); 	}	
+			
 			u2_printf("*%s*M345*TTT*000*/**",RX_BUF);//串口2反馈
 			TIM10_Stop();          //定时器关闭
 			//判断复位	
@@ -3944,12 +3952,11 @@ void Fun_YL(void)
 ************************************************************************/
 void Fun_YL1(void)
 {
-	u8 direct,key;    //表示电机运行方向，1：小桌子前进；0：小桌子后退
+	u8 direct;    //表示电机运行方向，1：小桌子前进；0：小桌子后退
 	u16 arr_now;      //本次运行脉冲值
 	u8 len;           //表示接收的字符串的长度
-	static u8 desk_front_flag=0;			//设置状态标志位
-	static u8 desk_behind_flag=0;	 		//设置状态标志位
-//实现上位机实时显示护理床当前运动状态
+	u8 err=0;
+//实现上位机实时显示护理床当前运动状态 
 	static u8 k=0;            //发送第k张图片
 	static u8 kj=0;
 	u8 j=0;	
@@ -3957,66 +3964,16 @@ void Fun_YL1(void)
 	static u8 yljx_flag;    //判断小桌子是否运行到极限位置，若是发送极限位置图片	
 	//联锁功能，只有在左右翻身功能复位后，才能进行小桌子移动
 	if((ZF_Flag==0)&&(YF_Flag==0))
-	{	
-		//小桌子电机先运行一段时间
-		if(YL_Flag==0)
+	{		
+		if(((strstr((const char *)USART2_RX_BUF,(const char *)"YLS"))||(strstr((const char *)UART4_RX_BUF,(const char *)"YLS"))))
 		{
-			if((strstr((const char *)USART2_RX_BUF,(const char *)"YLS"))||(strstr((const char *)UART4_RX_BUF,(const char *)"YLS")))
-			{
-				direct=1;			//设置运行方向标志
-				YL_Flag=1;		//设置状态标志位
-				W25QXX_Write((u8*)&YL_Flag,39,1);		//将状态标志位写入flash
-				desk_front_flag=1;		//设置状态标志位
-				u2_printf("YL_flag==1");
-				delay_ms(200);
-				u2_printf("YLKS");
-				delay_ms(200);
-				u2_printf("CT_YLFront");
-				MotorStart(7,0,700-1,25-1);
-				u2_printf("*%s*M7*Z*0*/**",RX_BUF);		//串口2反馈
-				TIM10_Init((u16)(Ang_To_Arr_YL(YL_Lim)/1.5),65000);   //打开定时器，定时器周期=(freq1*freq_time1_1)/90mhz	
-				__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF);  //清除中断标志位
-				while(!(__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF))) 
-				{
-					//光电限位
-					if((0==GD7_ZZ)&&(1==direct))
-					{
-						delay_us(100);
-						if(0==GD7_ZZ)
-						{
-							u2_printf("GD7ZZ");					
-							break;					
-						}								
-					}	
-					//电机故障、故障诊断
-//					if(PCF8574_ReadBit(1)==1)        
-//					{	
-//						delay_us(100);
-//						if(1==PCF8574_ReadBit(1))
-//						{
-//							YL_GZ=1;
-//							u2_printf("*%s*M7*Z*1*/**",RX_BUF);
-//							delay_ms(200);
-//							u2_printf("YLGZ");
-//							Fun_GZCL();
-//							break;						
-//						}								             
-//					}					
-				}
-				MotorStop(7);    u2_printf("*%s*M7*T*0*/**",RX_BUF);   //电机停止				，串口2反馈		
-				TIM10_Stop();       //定时器关闭
-				__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF);		// 清除中断标志位
-				u2_printf("电机7第一阶段运行完成");
-			}
-		}
-
-		if((strstr((const char *)USART2_RX_BUF,(const char *)"YLS"))||(strstr((const char *)UART4_RX_BUF,(const char *)"YLS"))||(desk_front_flag==1))
-		{
-			desk_front_flag=0;		//设置状态标志位
 			direct=1;			//设置运行方向标志
-			if(YL_Flag==0)
+			if(yljx_flag==1)
+			{err=1;u2_printf("err\r\n");}
+			if((YL_Flag==0)&&(err==0))
 			{
 				YL_Flag=1;		//设置状态标志位
+			//	W25QXX_Write((u8*)&YL_Flag,39,1);		//将状态标志位写入flash
 				delay_ms(200);
 				u2_printf("YL_flag==1");
 				delay_ms(200);
@@ -4024,68 +3981,65 @@ void Fun_YL1(void)
 				delay_ms(200);
 				u2_printf("CT_YL1");
 			}
+			
+			if((20*(YL_Lim)>YL_Runed)&&(err==0))  //上行时，比较值为上行极限装载值与校准后的当量装载值的差值，两个差值不能为0
+			{
+				u2_printf("*%s*M7*Z*0*/**",RX_BUF);		//串口2反馈
+				MotorStart(7,0,700-1,25-1);
+				TIM2_Init(2000,900);
+				//TIM2_Init(Ang_To_Arr_YL2(YL_Lim)-YL_Runed,65000);  //定时器周期=(freq1*freq_time1_1)/90mhz			
+			}	
 		}
-		if((strstr((const char *)USART2_RX_BUF,(const char *)"YLX"))||(strstr((const char *)UART4_RX_BUF,(const char *)"YLX")))
-		{			
+		if(((strstr((const char *)USART2_RX_BUF,(const char *)"YLX"))||(strstr((const char *)UART4_RX_BUF,(const char *)"YLX"))))
+		{
 			direct=0;			//设置运行方向标志
-			if(1==yljx_flag)
+			if(YL_Runed==0)
+			{err=1;u2_printf("err\r\n");}
+			if((1==yljx_flag)&&(err==0))
 			{
 				yljx_flag=0;	//设置极限状态标志位
 				delay_ms(200);
 				u2_printf("CT_YL20");
 			}
-		}
-		if(direct==1)   //如果是小桌子向前
-		{		
-			if(Ang_To_Arr_YL(YL_Lim)>YL_Runed)  //上行时，比较值为上行极限装载值与校准后的当量装载值的差值，两个差值不能为0
+			if((YL_Runed>0)&&(err==0))    //下行时，比较值为校准后的当量装载值与0,且不能为0
 			{
-				MotorStart(7,0,700-1,25-1);
-				u2_printf("*%s*M7*Z*0*/**",RX_BUF);		//串口2反馈
-				TIM10_Init(Ang_To_Arr_YL(YL_Lim)-YL_Runed,65000);    //打开定时器，定时器周期=(freq1*freq_time1_1)/90mhz		
-			}				
-		}
-		else       //如果是小桌子后退
-		{
-			if(YL_Runed>0)    //下行时，比较值为校准后的当量装载值与0,且不能为0
-			{
-				desk_behind_flag=1;		//设置状态标志位
-				MotorStart(7,1,700-1,25-1);
 				u2_printf("*%s*M7*F*0*/**",RX_BUF);		//串口2反馈
-				TIM10_Init(YL_Runed,65000);    //打开定时器，定时器周期=(freq1*freq_time1_1)/90mhz			
+				MotorStart(7,1,700-1,25-1);
+				TIM2_Init(2000,900);	//定时器定时20ms
+			//	TIM2_Init(YL_Runed,65000);  //定时器周期=(freq1*freq_time1_1)/90mhz			
 			}
 		}
-		memset(USART2_RX_BUF,0,USART2_MAX_RECV_LEN);//清空串口2接收数组			
+		memset(USART2_RX_BUF,0,USART2_MAX_RECV_LEN);	//清空串口2接收数组		
 		USART2_RX_LEN=0;				//串口2状态清零
-		memset(UART4_RX_BUF,0,UART4_MAX_RECV_LEN);			//清空串口4接收数组		
+		memset(UART4_RX_BUF,0,UART4_MAX_RECV_LEN);		//清空串口4接收数组			
 		UART4_RX_LEN=0;				  //串口4状态清零
-		__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); // 清除中断标志位
-		 if(((YL_Runed!=Ang_To_Arr_YL(YL_Lim))&&(1==direct))||((0!=YL_Runed)&&(0==direct)))
+		 if((((YL_Runed!=20*(YL_Lim))&&(1==direct))||((0!=YL_Runed)&&(0==direct)))&&(err==0))
 		 {	 	
-			 while(!(__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF)))  //等待定时时间到，时间到跳出循环  
+			while((YL_Runed+(-1)*(1-direct*2)*T2RunTimes)<20*(YL_Lim))  //等待定时时间到，时间到跳出循环  
 			{						
 				//光电限位											   						
-				if((0==GD7_ZZ)&&(1==direct))
-				{
-					delay_us(100);
-					if(0==GD7_ZZ)
-					{
-						u2_printf("GD7ZZ");					
-						break;					
-					}								
-				}
-				if((0==GD7_CS)&&(0==direct))
-				{
-					delay_us(100);
-					if(0==GD7_CS)
-					{
-						u2_printf("GD7CS");					
-						break;						
-					}					
-				}
+//				if((0==GD7_ZZ)&&(1==direct))
+//				{
+//					delay_us(100);
+//					if(0==GD7_ZZ)
+//					{
+//						u2_printf("GD7ZZ");					
+//						break;					
+//					}								
+//				}
+//				if((0==GD7_CS)&&(0==direct))
+//				{
+//					delay_us(100);
+//					if(0==GD7_CS)
+//					{
+//						u2_printf("GD7CS");					
+//						break;						
+//					}					
+//				}
 				//停止指令
 				if(USART2_RX_LEN&0x8000)
 				{
-					len=USART2_RX_LEN&0x3fff;				//获取串口2接收数组字符长度	
+					len=USART2_RX_LEN&0x3fff;	//获取串口2接收数组字符长度				
 					USART2_RX_BUF[len]=0;			//串口2数组末尾添"0"
 					if((strstr((const char *)USART2_RX_BUF,(const char *)"STOP"))||(strstr((const char *)USART2_RX_BUF,(const char *)"YLS"))||(strstr((const char *)USART2_RX_BUF,(const char *)"YLX")))    //若接收到Stop,则跳出循环	
 					{
@@ -4097,13 +4051,13 @@ void Fun_YL1(void)
 					else
 					{
 						u2_printf("NotRun");    //收到指令，但正在执行当前函数，无法去执行去新收到的指令函数							
-						memset(USART2_RX_BUF,0,USART2_MAX_RECV_LEN);	//清空串口2接收数组		
+						memset(USART2_RX_BUF,0,USART2_MAX_RECV_LEN);		//清空串口2接收数组	
 						USART2_RX_LEN=0;			//串口2状态清零
 					}						
 				}	
 				if(UART4_RX_LEN&0x8000)
 				{
-					len=UART4_RX_LEN&0x3fff;	//获取串口4接收数组字符长度				
+					len=UART4_RX_LEN&0x3fff;		//获取串口4接收数组字符长度			
 					UART4_RX_BUF[len]=0;				//串口4数组末尾添"0"
 					if((strstr((const char *)UART4_RX_BUF,(const char *)"STOP"))||(strstr((const char *)UART4_RX_BUF,(const char *)"YLS"))||(strstr((const char *)UART4_RX_BUF,(const char *)"YLX")))    //若接收到Stop,则跳出循环	
 					{
@@ -4117,12 +4071,12 @@ void Fun_YL1(void)
 					else
 					{
 						u2_printf("NotRun");    //收到指令，但正在执行当前函数，无法去执行去新收到的指令函数							
-						memset(UART4_RX_BUF,0,UART4_MAX_RECV_LEN);			//清空串口4接收数组		
+						memset(UART4_RX_BUF,0,UART4_MAX_RECV_LEN);		//清空串口4接收数组			
 						UART4_RX_LEN=0;				  //串口4状态清零
 					}						
 				}
 				//电机故障、故障诊断
-//				if(1==PCF8574_ReadBit(1))        
+//				if(PCF8574_ReadBit(1)==1)        
 //				{	
 //					delay_us(100);
 //					if(1==PCF8574_ReadBit(1))
@@ -4137,14 +4091,15 @@ void Fun_YL1(void)
 //				}								
 				
 				//发送动画指令
-				 arr_send=__HAL_TIM_GET_COUNTER(&TIM10_Handler);		//获取当前寄存器运行装载值
+				// arr_send=__HAL_TIM_GET_COUNTER(&TIM2_Handler);		//获取当前寄存器运行装载值
+				
 				if(direct==1)
 				{
-					j=(YL_Runed+arr_send)/(Ang_To_Arr_YL(YL_Lim)/19);		//图片序号计算
+					j=(YL_Runed+T2RunTimes)/(20*(YL_Lim)/19);		//图片序号计算
 				}
 				else
 				{
-					j=abs(YL_Runed,arr_send)/(Ang_To_Arr_YL(YL_Lim)/19);		//图片序号计算
+					j=abs(YL_Runed,T2RunTimes)/(20*(YL_Lim)/19);		//图片序号计算
 				}
 				k=YL_Pic;
 				if(	k!=j)
@@ -4156,137 +4111,59 @@ void Fun_YL1(void)
 						if((1<YL_Pic)&&(YL_Pic<20))
 						{
 							u2_printf("CT_YL%d",YL_Pic);		//串口2发送动画图片指令
-						}							
+						}
 					}					
 				}
-			}				    
-			MotorStop(7);   u2_printf("*%s*M7*T*0*/**",RX_BUF);    //电机停止，串口2反馈
-			TIM10_Stop();       //定时器关闭
-			//判断复位
-			if(((__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF))||(0==GD7_CS))&&(direct==0))   //判断是否处于复位状态，复位状态的前提是下行的定时器走完
-			{
-				arr_now=0;         //此时处于复位状态，将状态值都设为0；
-				YL_Flag=0;				//设置状态标志位
-				W25QXX_Write((u8*)&YL_Flag,39,1);		//将状态标志位写入flash
-				u2_printf("YL_flag==0");
 			}
-			else
+			arr_now=T2RunTimes;
+			MotorStop(7);       //电机停止			
+			TIM2_Close();        //定时器关闭
+			T2RunTimes=0;
+			u2_printf("*%s*M7*T*0*/**",RX_BUF);		//串口2反馈
+			//判断复位
+
+			if(direct==1)
 			{
-				arr_now=__HAL_TIM_GET_COUNTER(&TIM10_Handler);    //获取当前计数值arr_now				
-				YL_Flag=1;		//设置状态标志位
-			}	
-			//通过上下行判断脉冲累计
-			if(direct==1)        //如果是小桌子前进，则用+
-			{
-				if((__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF))||(0==GD7_ZZ))
-				{ 					
-					YL_Runed=Ang_To_Arr_YL(YL_Lim);				//设置已运行脉冲值为极限值
+				YL_Runed+=arr_now;		//首先计算当前所有运行的20ms次数
+				if(YL_Runed<20*(YL_Lim))
+				{
+					YL_Flag=1;		//标志位置1
+				}
+				else
+				{
+					YL_Runed=20*(YL_Lim);				//设置已运行脉冲值为极限值
 					yljx_flag=1;		//设置极限状态标志位
+					delay_ms(200);
 					u2_printf("CT_YL20");
 					delay_ms(200);
 					u2_printf("YLJX");
-				}
-				else
-				{  YL_Runed=YL_Runed+arr_now;	}				//设置已运行脉冲值=上一次运行脉冲值+此次运行脉冲值		
+				}	
 			}
-			else                //如果是小桌子后退，则用-
-			{
-				if((__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF))||(0==GD7_CS))
-				{						
-					YL_Runed=0; 			//已运行脉冲值设为0
-					u2_printf("CT_YL1");
-					delay_ms(200);
-					u2_printf("YLFW");
-				}
-				else
-				{	 
-					YL_Runed=YL_Runed-arr_now;		//设置已运行脉冲值=上一次运行脉冲值-此次运行脉冲值
-				}						
-			}				
-			__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); // 清除中断标志位	   			
-			//若定时时间到但是光电没到，则电机再运行一段距离，到达光电开关位置（光电开关安装后打开此段,并删除清除中断语句）
-//			if((__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF))&&(GD7_CS==1)&&(direct==0)&&(YL_Flag==1))
-//			{   
-//				MotorStart(7,1,700-1,25-1);
-//				u2_printf("*%s*M7*F*0*/**",RX_BUF);
-//			    TIM10_Init(add_arr,65000);      //打开定时器，定时器周期=(freq1*freq_time1_1)/90mhz	
-//				__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); // 清除中断标志位
-//				
-//				while(!(__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF)))
-//				{							
-//					if(0==GD7_CS)  //运行时碰到光电开关，跳出循环 
-//					{
-//						delay_us(100);
-//						if(0==GD7_CS)
-//						{
-//							u2_printf("GD7CS");
-//							break;
-//						}							
-//					}
-//				}			
-//				MotorStop(7);     //电机停止
-//				u2_printf("*%s*M7*T*0*/**",RX_BUF);
-//				TIM10_Stop();     //关闭定时器
-//				if(0==GD7_CS)
-//				{
-//					u2_printf("*%s*GD7CS*/*0*/**",RX_BUF);
-//				}
-//				else
-//				{
-//					u2_printf("*%s*GD7CS*/*1*/**",RX_BUF);
-//				}
-//				__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); // 清除中断标志位	
-//			}			
-		}
-		if((YL_Flag==0)&&(1==desk_behind_flag))
-		{
-			memset(USART2_RX_BUF,0,USART2_MAX_RECV_LEN);	//清空串口2接收数组		
-			USART2_RX_LEN=0;			//串口2状态清零
-			memset(UART4_RX_BUF,0,UART4_MAX_RECV_LEN);			//清空串口4接收数组		
-			UART4_RX_LEN=0;				  //串口4状态清零
-			YL_Runed=0;						//设置已运行脉冲为0
-			MotorStart(7,1,700-1,25-1);
-			u2_printf("*%s*M7*F*0*/**",RX_BUF);		//串口2反馈
-			TIM10_Init(Ang_To_Arr_YL(YL_Lim)/1.5,65000);		   //打开定时器，定时器周期=(freq1*freq_time1_1)/90mhz	
-			__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF);  //清除中断标志位
-			while(!(__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF))) 
-			{
-				if(0==GD7_CS)
+			else
+			{				
+				if(YL_Runed<arr_now)		//判断是否发生计算错误
+				{err=1;}			
+				YL_Runed-=arr_now;	//首先计算当前所有运行的20ms次数				
+				if((YL_Runed>0)&&(err==0))
 				{
-					delay_us(100);
-					if(0==GD7_CS)
-					{
-						u2_printf("GD7CS");					
-						break;						
-					}					
+					YL_Flag=1;		//标志位置1
 				}
-					//电机故障、故障诊断
-//				if(PCF8574_ReadBit(1)==1)        
-//				{	
-//					delay_us(100);
-//					if(1==PCF8574_ReadBit(1))
-//					{
-//						YL_GZ=1;
-//						u2_printf("*%s*M7*F*1*/**",RX_BUF);
-//						delay_ms(200);
-//						u2_printf("YLGZ");
-//						Fun_GZCL();
-//						break;						
-//					}								             
-//				}					
+				else
+				{
+					YL_Runed=0;
+					arr_now=0;         //此时处于复位状态，将状态值都设为0；
+					YL_Flag=0;		//设置状态标志位
+				//	W25QXX_Write((u8*)&YL_Flag,39,1);		//将状态标志位写入flash
+					u2_printf("CT_YL%d",1);
+					delay_ms(200);
+					u2_printf("YL_flag==0");
+				}					
 			}
-			MotorStop(7);       //电机停止
-			u2_printf("*%s*M7*T*0*/**",RX_BUF);		//串口2反馈
-			TIM10_Stop();       //定时器关闭
-			desk_behind_flag=0;		//设置状态标志位
-			__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF);		// 清除中断标志位
-			u2_printf("电机7第一阶段返回完成");
-		}		
+  		T2RunTimes=0;				
+		}
 	}
 	else
-	{
-		LedAlm(100,"YLGS");
-	}		
+	{		LedAlm(100,"YLGS");	}			//若不满足条件，LED0/LED1闪一下
 }
 
 /***********************************************************************
@@ -4564,6 +4441,7 @@ void Fun_ZBH(void)
 	u8 j=0;	
 	u16 arr_send;	    //当前一次运行脉冲数
 	static u8 kj;
+	u8 GDFlag=0;
 	
 	//联锁功能，只有在已执行左翻身功能且左腰部护理复位后，才能进行左背部护理
 	if((ZF_Flag==1)&&(ZYH_Flag==0))
@@ -4580,7 +4458,7 @@ void Fun_ZBH(void)
 		}
 		else
 		{ 
-		    direct=0;			//设置运行方向标志
+		  direct=0;			//设置运行方向标志
 			delay_ms(200);
 			u2_printf("CT_ZBH20");
 		}
@@ -4616,9 +4494,10 @@ void Fun_ZBH(void)
 			}
 			if((0==GD3_CS)&&(1==direct))     //落下
 			{	
-				delay_us(100);
+				delay_us(100);			
 				if(0==GD3_CS)
 				{
+					GDFlag=1;
 					u2_printf("GD3_CS");
 					break;					
 				}					
@@ -4670,10 +4549,15 @@ void Fun_ZBH(void)
 					}						
 				}
 			}
-		}				  
-		MotorStop(3);       //电机停止
+		}
+		if((GDFlag==1)&&(ZBH_Flag==1))
+		{
+			M345DelayStop(M3GDL_BC,0,0);	//3号电机运行
+		}
+		else
+		{	MotorStop(3); }      //电机停止
 		u2_printf("*%s*M3*T*0*/**",RX_BUF);		//串口2反馈
-		TIM10_Stop();       //关闭定时器    
+		TIM10_Stop();      		 //关闭定时器    
 		//定时时间没到，光电到
 		if((!(__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF)))&&(0==GD3_CS)&&(1==direct))
 		{
@@ -4752,7 +4636,8 @@ void Fun_YBH(void)
 	u8 j=0;	
 	u16 arr_send;	    //当前一次运行脉冲数
 	static u8 kj;	
-
+	u8 GDFlag=0;
+	
 	//联锁功能，只有在已执行右翻身功能且右腰部护理复位后，才能进行右背部护理
 	if((1==YF_Flag)&&(YYH_Flag==0))
 	{	
@@ -4858,8 +4743,13 @@ void Fun_YBH(void)
 					}						
 				}
 			}
-		}			
-		MotorStop(3);        //电机停止
+		}	
+		if((GDFlag==1)&&(YBH_Flag==1))
+		{
+			M345DelayStop(M3GDR_BC,0,0);	//3号电机运行
+		}
+		else
+		{	MotorStop(3); }      //电机停止
 		u2_printf("*%s*M3*T*0*/**",RX_BUF);		//串口2反馈
 		TIM10_Stop();        //关闭定时器
 		//定时时间没到，光电到
@@ -4941,7 +4831,8 @@ void Fun_ZYH(void)
 	u8 j=0;	 
 	u16 arr_send;	   //当前一次运行脉冲数
 	static u8 kj;	
-
+	u8 GDFlag;
+	
 	//联锁功能，只有在已执行左翻身功能且左背部护理复位后，才能进行左腰部护理
 	if((1==ZF_Flag)&&(ZBH_Flag==0))
 	{
@@ -5047,8 +4938,14 @@ void Fun_ZYH(void)
 					}						
 				}
 			}
-		}				     
-		MotorStop(4);       //电机停止
+		}
+		if((GDFlag==1)&&(ZYH_Flag==1))
+		{
+			M345DelayStop(0,M4GDL_BC,0);	//3号电机运行
+		}
+		else
+		{	MotorStop(4); }      //电机停止
+
 		u2_printf("*%s*M4*T*0*/**",RX_BUF);		//串口2反馈
 		TIM10_Stop();       //定时器关闭
 		//定时时间没到，光电到
@@ -5131,7 +5028,8 @@ void Fun_YYH(void)
 	u8 j=0;	
 	u16 arr_send;	      //当前一次运行脉冲数
 	static u8 kj;		
-
+	u8 GDFlag;
+	
 	//联锁功能，只有在已执行右翻身功能且右背部护理复位后，才能进行右腰部护理
 	if((YF_Flag==1)&&(YBH_Flag==0))
 	{
@@ -5220,9 +5118,7 @@ void Fun_YYH(void)
 			arr_send=__HAL_TIM_GET_COUNTER(&TIM10_Handler);		//获取当前寄存器运行装载值
 			j=arr_send/(Ang_To_Arr_ZYFS(YF_Lim)/19);
 			if(0==direct)
-			{
-				j=19-j;
-			}
+			{	j=19-j;		}	
 			k=YYH_Pic;
 			if(	k!=j)
 			{
@@ -5237,7 +5133,11 @@ void Fun_YYH(void)
 				}
 			}
 		}				      
-		MotorStop(4);      //电机停止
+		if((GDFlag==1)&&(YYH_Flag==1))
+		{	M345DelayStop(0,M4GDR_BC,0);	}	//4号电机延时停止
+		else
+		{	MotorStop(4); }      //电机停止
+
 		u2_printf("*%s*M4*T*0*/**",RX_BUF);		//串口2反馈
 		TIM10_Stop();      //关闭定时器 
 		//定时时间没到，光电到
@@ -6076,8 +5976,7 @@ void Fun_LD(void)
  函数名      ：Fun_HL_ZB(void)  
  函数功能    ：护栏支背按键联动
  输入        ：无
- 输出        ：无
-                           
+ 输出        ：无                          
 ************************************************************************/
 void Fun_HL_ZB(void)
 {
@@ -6279,7 +6178,7 @@ void Fun_HL_ZF(void)
 	u16 arr_now;              //当前一次运行脉冲数，用于脉冲累计
 	u8 len;                   //接受的字符串长度
 	static u8 motor5_run_flag;   //判断小侧翻是否已经动作，若动作该位置1 
-
+	u8 GDFlag;
 	//实现上位机实时显示护理床当前运动状态     
 	static u8 M345_Start;     //345电机从初始位置运动
 	static u8 M345_End;       //345电机运行到上极限位置标志位  
@@ -6448,20 +6347,15 @@ void Fun_HL_ZF(void)
 				{
 					delay_us(100);
 					if((0==GD3_CS)&&(1==GD4_CS))
-					{
-						MotorStop(3);  
-					}
+					{	MotorStop(3);	}			
 					if((1==GD3_CS)&&(0==GD4_CS))
-					{
-						MotorStop(4);
-					}
+					{	MotorStop(4); }				
 					if((0==GD3_CS)&&(0==GD4_CS))
 					{
-						u2_printf("GD3CS");
-						delay_ms(200);
-						u2_printf("GD4CS");
+						GDFlag=1;
 						break;					
 					}
+					
 				}
 				if(((0==GD3_ZFZZ)||(0==GD4_ZFZZ))&&(1==direct))   //如果碰到光电开关，跳出循环，停止运行
 				{
@@ -6575,11 +6469,21 @@ void Fun_HL_ZF(void)
 						}							
 					}				
 				}					
-			}	
-			//电机停止
-			MotorStop(3);   
-			MotorStop(4);  
-			MotorStop(5);   
+			}
+			if((GDFlag==1)&&(ZF_Flag==1))
+			{
+				MotorStop(3);  MotorStop(4);  MotorStop(5);					
+				MotorStart(3,1,1400-1,25-1);			     //3号电机启动
+				MotorStart(4,1,(1400-1)*1.2,25-1);		 //4号电机启动	
+/******************修改下处的参数************************/				
+				M345DelayStop(M3GDL_BC,M4GDL_BC,0);
+/******************修改上处的参数************************/						
+				u2_printf("GD3CS");
+				delay_ms(200);
+				u2_printf("GD4CS");			
+			}
+			else
+			{	MotorStop(3);  MotorStop(4);  MotorStop(5); 	}	 
 			u2_printf("*%s*M345*TTT*000*/**",RX_BUF);		//串口2反馈
 			TIM10_Stop();         //定时器关闭
 			//判断复位
@@ -6899,6 +6803,7 @@ void Fun_HL_YF(void)
 	static u8 k=0,m=0;
 	static u8 M345R_Start;    //345电机从初始位置启动
 	static u8 M345R_End;      //345电机运行到上极限位置
+	u8 GDFlag;
 	u8 mn;
 	u8 kj;
 	u8 j=0,n=0;
@@ -7064,20 +6969,14 @@ void Fun_HL_YF(void)
 				{
 					delay_us(100);
 					if((0==GD3_CS)&&(1==GD4_CS))
-					{
-//						u2_printf("GD3CS");
-						MotorStop(3);  
-					}
+					{	MotorStop(3); 	}
+					
 					if((1==GD3_CS)&&(0==GD4_CS))
-					{
-						u2_printf("GD4CS");
-						MotorStop(4);
-					}
+					{	MotorStop(4);	} 
+					
 					if((0==GD3_CS)&&(0==GD4_CS))
-					{
-						u2_printf("GD3CS");
-						delay_ms(200);
-						u2_printf("GD4CS");
+					{	
+						GDFlag=1;
 						break;					
 					}
 				}
@@ -7194,10 +7093,19 @@ void Fun_HL_YF(void)
 					}				
 				}							
 			}
-			//电机停止
-			MotorStop(3);   
-			MotorStop(4);   
-			MotorStop(5);   
+			if((GDFlag==1)&&(YF_Flag==1))
+			{	MotorStop(3);  MotorStop(4);  MotorStop(5);				
+				MotorStart(3,0,(1400-1)*2,25-1);			     //3号电机启动
+				MotorStart(4,0,(1400-1)*0.8,25-1);	 		 	 //4号电机启动
+/******************修改下处的参数************************/				
+				M345DelayStop(M3GDR_BC,M4GDR_BC,0);
+/******************修改上处的参数************************/						
+				u2_printf("GD3CS");
+				delay_ms(200);
+				u2_printf("GD4CS");	
+			}
+			else
+			{	MotorStop(3);  MotorStop(4);  MotorStop(5); 	}	  
 			u2_printf("*%s*M345*TTT*000*/**",RX_BUF);		//串口2反馈
 			TIM10_Stop();         //定时器关闭
 			//判断复位

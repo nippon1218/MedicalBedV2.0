@@ -35,11 +35,15 @@ void Motor_Init(void);             //电机IO口初始化函数
 
 void MotorStart(u8 Motori,u8 dir,u16 arr,u16 psc);  //单个电机启动
 void MotorStop(u8 Motori);                          //单个电机停止
+void M345DelayStop(u16 M3delay,u16 M4delay,u16 M5delay);
 void Motor_All_Stop(void);                          //所有电机停止
 void Motor4_BC(u8 dir,u16 time_arr,u16 arr,u16 psc);//电机4补偿函数
+void Motor_BC(u8 MotorNum,u8 dir,u16 time_arr,u16 arr,u16 psc);//电机4补偿函数
 
 void Fun_ZBTG(u8 dir,u32 pulse);    //坐便袋扎紧推杆驱动函数
 void ZBD_Start(u16 arr,u16 psc);   //坐便袋收线驱动函数
 void ZBD_Stop(void);
+
+
 
 #endif

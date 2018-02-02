@@ -321,6 +321,14 @@ extern u32 ZBD_Lim;           //极限脉冲
 
 extern u32 DG_Freq;           //控制吊挂电机运行速度
 
+//光电补偿
+extern u16 M3GDL_BC;				  //3号电机左翻复位补偿
+extern u16 M3GDR_BC;			  	//3号电机右翻复位补偿
+extern u16 M4GDL_BC;				  //4号电机左翻复位补偿
+extern u16 M4GDR_BC;				  //4号电机右翻复位补偿
+extern u16 M5GDL_BC;				  //5号电机左翻复位补偿
+extern u16 M5GDR_BC;				  //5号电机右翻复位补偿
+
 #endif
 
 

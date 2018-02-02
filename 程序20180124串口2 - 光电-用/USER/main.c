@@ -47,14 +47,14 @@ int main(void)
 			len=USART2_RX_LEN&0x3fff;			//获取串口2接收数组字符长度			
 			USART2_RX_BUF[len]=0;					//串口2接收数组末尾添0,作为字符串的结束
 
-			if(strstr((const char *)USART2_RX_BUF,(const char *)"YLS")) 
-			{	
-				DeskRunNew();								//小桌子运行，上行
-			}	
-			if(strstr((const char *)USART2_RX_BUF,(const char *)"YLX")) 
-			{	
-				DeskRunNew();								//小桌子运行，下行
-			}				
+//			if(strstr((const char *)USART2_RX_BUF,(const char *)"YLS")) 
+//			{	
+//				DeskRunNew();								//小桌子运行，上行
+//			}	
+//			if(strstr((const char *)USART2_RX_BUF,(const char *)"YLX")) 
+//			{	
+//				DeskRunNew();								//小桌子运行，下行
+//			}	
 			//串口设置模块
 			if(strstr((const char *)USART2_RX_BUF,(const char *)"SZ"))   //判断USART2_RX_BUF中是否存在"SZ"
 			{			 				

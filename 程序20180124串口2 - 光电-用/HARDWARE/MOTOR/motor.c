@@ -242,6 +242,53 @@ void MotorStop(u8 i)
 			break;
 	}
 }
+
+/*********************************************************************
+*函数名       ：M345DelayStop()
+*函数功能     ：3、4、5电机停止
+*输入         ：MotorID-电机ID
+*输出         ：无
+***********************************************************************/ 
+void M345DelayStop(u16 M3delay,u16 M4delay,u16 M5delay)
+{
+	if((M3delay<=M4delay)&&(M4delay<=M5delay))
+	{
+		delay_ms(M3delay);MotorStop(3);
+		delay_ms(M4delay-M3delay);MotorStop(4);	
+		delay_ms(M5delay-M4delay);MotorStop(5);	
+	}
+	else if((M3delay<=M5delay)&&(M5delay<=M4delay))
+	{
+		delay_ms(M3delay);MotorStop(3);
+		delay_ms(M5delay-M3delay);MotorStop(5);	
+		delay_ms(M4delay-M5delay);MotorStop(4);
+	}		
+	else if((M4delay<=M3delay)&&(M3delay<=M5delay))
+	{
+		delay_ms(M4delay);MotorStop(4);
+		delay_ms(M3delay-M4delay);MotorStop(3);	
+		delay_ms(M5delay-M3delay);MotorStop(5);		
+	}
+	else if((M4delay<=M5delay)&&(M5delay<=M3delay))
+	{
+		delay_ms(M4delay);MotorStop(4);
+		delay_ms(M5delay-M4delay);MotorStop(5);	
+		delay_ms(M3delay-M5delay);MotorStop(3);		
+	}
+	else if((M5delay<=M3delay)&&(M3delay<=M4delay))
+	{
+		delay_ms(M5delay);MotorStop(5);
+		delay_ms(M3delay-M5delay);MotorStop(3);	
+		delay_ms(M4delay-M3delay);MotorStop(4);		
+	}
+	else if((M5delay<=M4delay)&&(M4delay<=M3delay))
+	{
+		delay_ms(M5delay);MotorStop(5);
+		delay_ms(M4delay-M5delay);MotorStop(4);	
+		delay_ms(M3delay-M4delay);MotorStop(3);		
+	}
+}
+
 /*********************************************************************
 *函数名       ：Motor4_BC()
 *函数功能     ：4号电机驱动
@@ -269,7 +316,30 @@ void Motor4_BC(u8 dir,u16 time_arr,u16 arr,u16 psc)
 	__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); //清除定时器中断标志位
 }
 
-
+/*********************************************************************
+*函数名       ：Motor_BC()
+*函数功能     ：电机驱动
+*输入         ：MotorNum:电机号，3,4,5 dir:方向  arr(自动重装载值)，psc(分频值)
+*输出         ：无
+***********************************************************************/
+void Motor_BC(u8 MotorNum,u8 dir,u16 time_arr,u16 arr,u16 psc)
+{
+	u8 err=0;
+	if((MotorNum==3)||(MotorNum==4)||(MotorNum)==5)
+	{err=0;}
+	else{err=1;}
+	if(err==0)
+	{
+		MotorStart(MotorNum,dir,1400-1,25-1);//电机启动
+		TIM10_Init(time_arr,65000);    //打开定时器
+		__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); //清除定时器中断标志位
+		while(!(__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF)) )//等待定时时间到
+		{			}
+		MotorStop(MotorNum);//电机停止
+		TIM10_Stop();//关闭定时器
+		__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); //清除定时器中断标志位
+	}
+}
 
 /*********************************************************************
 *函数名       ：ZBD_Start()
