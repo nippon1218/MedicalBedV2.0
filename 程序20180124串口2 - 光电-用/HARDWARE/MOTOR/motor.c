@@ -26,18 +26,31 @@ void Motor_Init(void)
 	__HAL_RCC_GPIOH_CLK_ENABLE();           //开启GPIOH时钟	
 	__HAL_RCC_GPIOI_CLK_ENABLE();           //开启GPIOI时钟
 	
-    GPIO_Initure.Pin=GPIO_PIN_5|GPIO_PIN_6;            //PA5/6  
+    GPIO_Initure.Pin=GPIO_PIN_5;            //PA5  
     GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP;             //推挽输出
     GPIO_Initure.Pull=GPIO_PULLUP;                     //上拉
     GPIO_Initure.Speed=GPIO_SPEED_HIGH;                //高速
     HAL_GPIO_Init(GPIOA,&GPIO_Initure);
 	
-	GPIO_Initure.Pin= GPIO_PIN_4|GPIO_PIN_12;           //PC4/12
+		GPIO_Initure.Pin=GPIO_PIN_6;            //PA6  
+    GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP;             //推挽输出
+    GPIO_Initure.Pull=GPIO_PULLDOWN;                     //上拉
+    GPIO_Initure.Speed=GPIO_SPEED_HIGH;                //高速
+    HAL_GPIO_Init(GPIOA,&GPIO_Initure);
+	
+	GPIO_Initure.Pin= GPIO_PIN_4;           //PC4
     GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP;              //推挽输出
     GPIO_Initure.Pull=GPIO_PULLUP;                      //上拉
     GPIO_Initure.Speed=GPIO_SPEED_HIGH;                 //高速
     HAL_GPIO_Init(GPIOC,&GPIO_Initure);	
-	
+
+	GPIO_Initure.Pin= GPIO_PIN_12;           //PC12
+    GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP;              //推挽输出
+    GPIO_Initure.Pull=GPIO_PULLDOWN;                      //上拉
+    GPIO_Initure.Speed=GPIO_SPEED_HIGH;                 //高速
+    HAL_GPIO_Init(GPIOC,&GPIO_Initure);
+
+
 	GPIO_Initure.Pin=GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_7;  //PD2/3/7
     GPIO_Initure.Mode=GPIO_MODE_OUTPUT_PP;              //推挽输出
     GPIO_Initure.Pull=GPIO_PULLUP;                      //上拉
@@ -297,6 +310,7 @@ void M345DelayStop(u16 M3delay,u16 M4delay,u16 M5delay)
 ***********************************************************************/
 void Motor4_BC(u8 dir,u16 time_arr,u16 arr,u16 psc)
 {
+	u8 GDFlag=0;
 	if(1==dir)
 	{
 		MotorStart(4,1,1400-1,25-1);//电机启动
@@ -309,8 +323,29 @@ void Motor4_BC(u8 dir,u16 time_arr,u16 arr,u16 psc)
 	__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); //清除定时器中断标志位
 	while(!(__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF)) )//等待定时时间到
 	{
-
+//		if((0==GD4_CS)&&(0==dir)&&(0==YF_Flag))
+//		{
+//			delay_us(50);
+//			if(0==GD4_CS)
+//			{
+//				GDFlag=1;
+//				break;
+//			} 
+//		}
+//		if((0==GD4_CS)&&(1==dir)&&(0==ZF_Flag))
+//		{
+//			delay_us(50);
+//			if(0==GD4_CS)
+//			{
+//				GDFlag=1;
+//				break;
+//			} 
+//		}
 	}
+//	if(GDFlag==1)
+//	{
+//		delay_ms(350);
+//	}
 	MotorStop(4);//电机停止
 	TIM10_Stop();//关闭定时器
 	__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); //清除定时器中断标志位

@@ -144,7 +144,7 @@ int main(void)
 				Fun_HL_ZF();		//◊Û∑≠…Ì				
 			}					
 			if(strstr((const char *)UART4_RX_BUF,(const char *)"BodyRightGB"))     
-			{				
+			{
 				Fun_HL_YF();		//”“∑≠…Ì			
 			}	
 			if(strstr((const char *)UART4_RX_BUF,(const char *)"BackNursingGB"))   
