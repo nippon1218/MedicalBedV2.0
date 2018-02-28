@@ -1733,10 +1733,10 @@ void Wifi_ToPC(u8 *data)
 {
 	u16 i;
 	u8 n;	
-	if(PC_Ready==1)
+	if(HL2_Ready==1)
 	{
 		i=strlen((const char*)data);                //获取数据长度	
-		u4_printf("AT+CIPSEND=%d,%d\r\n",PC,i);     //发送AT+CIPSEND指令
+		u4_printf("AT+CIPSEND=%d,%d\r\n",HL2,i);     //发送AT+CIPSEND指令
 		delay_ms(4);
 		memset(UART4_RX_BUF,0,20);	//清除串口4接收缓存区	
 		UART4_RX_LEN=0;             //串口4状态清零                
@@ -1805,10 +1805,10 @@ void WiFi_ToHL(u8 *data)
 {
 	u16 i;
 	u8 n;	
-	if(HL_Ready==1)
+	if(HL1_Ready==1)
 	{
 		i=strlen((const char*)data);                //获取数据长度	
-		u4_printf("AT+CIPSEND=%d,%d\r\n",HL,i);     //发送AT+CIPSEND指令
+		u4_printf("AT+CIPSEND=%d,%d\r\n",HL1,i);     //发送AT+CIPSEND指令
 		delay_ms(4);
 		memset(UART4_RX_BUF,0,20);	 //清除串口4接收缓存区	
 		UART4_RX_LEN=0;             //串口4状态清零                  
@@ -1827,12 +1827,12 @@ void WiFi_ToHL(u8 *data)
 ************************************************************************/
 void WiFi_ToPC(u8 *data)
 {
-	if(PCB_Ready==1)
-	{                             
-		u2_printf("%s",data);	
-		memset(USART2_RX_BUF,0,20);//清除串口2接收缓存区
-		USART2_RX_LEN=0; 					//串口2接收标志清零
-	}
+//	if(PCB_Ready==1)
+//	{                             
+//		u2_printf("%s",data);	
+//		memset(USART2_RX_BUF,0,20);//清除串口2接收缓存区
+//		USART2_RX_LEN=0; 					//串口2接收标志清零
+//	}
 }
 
 /***********************************************************************
@@ -4001,7 +4001,7 @@ void Fun_YL1(void)
 		 {	 	
 			while((YL_Runed+(-1)*(1-direct*2)*T2RunTimes)<20*(YL_Lim))  //等待定时时间到，时间到跳出循环  
 			{						
-				//光电限位											   						
+				//光电限位	
 				if((0==GD7_ZZ)&&(1==direct))
 				{
 					delay_us(100);

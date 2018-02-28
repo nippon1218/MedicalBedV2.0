@@ -6,16 +6,16 @@
 //默认设备号
 u8  SJ=6;       //手机app
 u8  YKQ=6;      //遥控器
-u8  HL=6;       //护栏
-u8  PC=6;       //PC机
+u8  HL1=6;       //护栏
+u8  HL2=6;       //PC机
 u8  Pad=6;      //Pad
 
 //设备连接状态 0：未连接；1：连接上
 u8 SJ_Ready=0;  //手机app
 u8 PC_Ready=0;  //PC
 u8 YKQ_Ready=0; //遥控器
-u8 HL_Ready=0;  //护栏
-u8 PCB_Ready=0; //电脑
+u8 HL1_Ready=0;  //护栏1
+u8 HL2_Ready=0; //护栏2
 
 u8 ID_NUM;      //智能终端对应的设备号
 
@@ -533,6 +533,19 @@ void ESP8266_AP_Init(u8 n)
 			}
 			delay_ms(1000);					
 	 }
+	 	for(i=0;i<n;i++)		//最大循环次数设置为参数n
+	 {		 
+		 if(atk_8266_send_cmd("AT+CIPSTO=2400","OK",60))	//发送指令：AT+CWMODE=2
+		 {
+			u2_printf("\r\n超时时间设置成功\r\n");
+			break;
+		 }
+		 else
+		 {
+			u2_printf("\r\n第%d次超时时间设置尝试失败，准备继续尝试设置\r\n",(i+1));
+		 }
+		delay_ms(100);				
+	 }
 }
 
 
@@ -977,16 +990,16 @@ void ESP8266_Get_Controler_Type(u16 timeout)
 	u8 time=0;
 	num=1;
 	ID=UART4_RX_BUF[0]-48;   //进制的转换
-	USART2->DR =ID;
+	
 	memset(UART4_RX_BUF,0,UART4_MAX_RECV_LEN);          //清除串口4接收缓存区	
 	
-	u2_printf("\r\nID=%x,num=%d\r\n",ID,num);
+//	u2_printf("\r\nID=%x,num=%d\r\n",ID,num);
 	UART4_RX_LEN=0;						//清空串口4状态标志位
-	ESP8266_send_data(ID,"who_are_you");
+	ESP8266_send_data(ID,"Name?");
 	delay_ms(300);
 	memset(UART4_RX_BUF,0,UART4_MAX_RECV_LEN);          //清除串口4接收缓存区	
 	UART4_RX_LEN=0;						//清空串口4状态标志位
-	TIM10_Init(30000,21000);
+	TIM10_Init(timeout,18000);
 	__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); // 清除中断标志位	 	
 	while(!(__HAL_TIM_GET_FLAG(&TIM10_Handler, TIM_SR_CC1IF) ) )
 	{
@@ -1002,7 +1015,7 @@ void ESP8266_Get_Controler_Type(u16 timeout)
 				break;
 			}		
 			
-			if(strstr((const char *)UART4_RX_BUF,(const char *)"Remote"))  //遥控器
+			if(strstr((const char *)UART4_RX_BUF,(const char *)"YKQ"))  //遥控器
 			{			
 				YKQ =ID;		//绑定设备ID
 				YKQ_Ready=1;		//设备标志位置1
@@ -1010,26 +1023,27 @@ void ESP8266_Get_Controler_Type(u16 timeout)
 				break;
 			}
 
-			if(strstr((const char *)UART4_RX_BUF,(const char *)"Guard"))  //护栏
+			if(strstr((const char *)UART4_RX_BUF,(const char *)"Guard1"))  //护栏
 			{			
-				HL= ID;		//绑定设备ID
-				HL_Ready=1;//设备标志位置1
-				u2_printf("\r\nGuard=%d\r\n",HL);					
+				HL1= ID;		//绑定设备ID
+				HL1_Ready=1;//设备标志位置1
+				u2_printf("\r\nGuard=%d\r\n",HL1);					
 				break;
 			}
-
-			if(strstr((const char *)UART4_RX_BUF,(const char *)"PC"))  //电脑
+			
+			if(strstr((const char *)UART4_RX_BUF,(const char *)"Guard2"))  //电脑
 			{		
-				 PC =ID;		//绑定设备ID
-				PC_Ready=1;		//设备标志位置1				
-				u2_printf("\r\nPC=%d\r\n",PC);					
+				HL2 =ID;		//绑定设备ID
+				HL2_Ready=1;		//设备标志位置1				
+				u2_printf("\r\nHL2=%d\r\n",HL2);					
 				break;
 			}
 		 }	
 	 }
 	__HAL_TIM_CLEAR_FLAG(&TIM10_Handler, TIM_SR_CC1IF); // 清除中断标志位	 	
-	u2_printf("\r\nfinish\r\n");
 }
+
+
 
 /***********************************************************************
  函数名    ：ESP8266_Close_Controler_Type()
@@ -1052,11 +1066,11 @@ void ESP8266_Close_Controler_Type(void)
 	{SJ=6;SJ_Ready=0;u2_printf("恢复SJ\r\n");}
 	if(ID==YKQ)
 	{YKQ=6;YKQ_Ready=0;u2_printf("恢复YKQ\r\n");}
-	if(ID==HL)
-	{HL=6;	HL_Ready=0;	u2_printf("恢复HL\r\n");}
-	if(ID==PC)
-	{PC=6;	PC_Ready=0;	u2_printf("恢复PC\r\n");}	
-	u2_printf("\r\nPhone=%d,YKQ=%d,HL=%d,PC=%d\r\n",SJ,YKQ,HL,PC);
+	if(ID==HL1)
+	{HL1=6;	HL1_Ready=0;	u2_printf("恢复HL\r\n");}
+	if(ID==HL2)
+	{HL2=6;	HL2_Ready=0;	u2_printf("恢复PC\r\n");}	
+	u2_printf("\r\nPhone=%d,YKQ=%d,HL=%d,HL2=%d\r\n",SJ,YKQ,HL1,HL2);
 }
 
 /***********************************************************************
@@ -1200,3 +1214,107 @@ u8* stick_check_cmd(u8 *str)
 }
 
 
+void WIFIStateCheck(void)
+{
+	char *localName="ServerIP:192.168.1.115 端口号:8086\r\n";
+	char *p;
+	char *p1;
+	char *p2;
+	u16 len=0;
+	u8 num;
+	u8 i;
+	
+	char WIFISTATE[500];
+	memset(WIFISTATE,0,500);
+	len=strlen(localName);
+	for(i=0;i<4;i++)
+	{
+		if(atk_8266_send_cmd("AT+CIPSTATUS","OK",150))	//发送指令：AT+CWMODE=2
+		{
+			break;
+		}
+	}	
+	memcpy(WIFISTATE,localName,len+1);
+	if(strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:0"))
+	{
+		num++;
+		p=WIFISTATE+len;
+		p1=strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:0");
+		p2=strstr(p1,(const char *)"192.168");	
+		memcpy(p,"Guest0在线: IP:",11);len=strlen(WIFISTATE);p=WIFISTATE+len;		
+		memcpy(p,p2,13);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		if(YKQ==0)
+		{
+			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		}		
+		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		
+	}
+	if(strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:1"))
+	{
+		num++;
+		p=WIFISTATE+len;
+		p1=strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:1");
+		p2=strstr(p1,(const char *)"192.168");	
+		memcpy(p,"Guest1在线: IP:",11);len=strlen(WIFISTATE);p=WIFISTATE+len;		
+		memcpy(p,p2,13);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		if(YKQ==1)
+		{
+			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		}
+		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
+	}	
+	if(strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:2"))
+	{
+		num++;
+		p=WIFISTATE+len;
+		p1=strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:2");
+		p2=strstr(p1,(const char *)"192.168");	
+		memcpy(p,"Guest2在线: IP:",11);len=strlen(WIFISTATE);p=WIFISTATE+len;		
+		memcpy(p,p2,13);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;	
+		if(YKQ==2)
+		{
+			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		}
+		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
+	}
+	if(strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:3"))
+	{
+		num++;
+		p=WIFISTATE+len;
+		p1=strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:3");
+		p2=strstr(p1,(const char *)"192.168");	
+		memcpy(p,"Guest3在线: IP:",11);len=strlen(WIFISTATE);p=WIFISTATE+len;		
+		memcpy(p,p2,13);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		if(YKQ==3)
+		{
+			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		}
+		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
+	}
+	if(strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:4"))
+	{
+		num++;
+		p=WIFISTATE+len;
+		p1=strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:4");
+		p2=strstr(p1,(const char *)"192.168");	
+		memcpy(p,"Guest4在线: IP:",11);len=strlen(WIFISTATE);p=WIFISTATE+len;		
+		memcpy(p,p2,13);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		if(YKQ==4)
+		{
+			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
+		}
+		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
+	}
+	u2_printf("%s\r\n",WIFISTATE);	
+}

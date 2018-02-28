@@ -21,16 +21,16 @@
 //智能终端的名称
 extern u8  SJ;                 //手机app
 extern u8  YKQ;                //遥控器
-extern u8  HL;                 //护栏
-extern u8  PC;                 //PC机
+extern u8  HL1;                 //护栏
+extern u8  HL2;                 //PC机
 extern u8  Pad;                //Pad
 
 //智能终端是否准备好发送/接收数据
 extern u8 SJ_Ready;        //手机app
 extern u8 PC_Ready;        //PC机
 extern u8 YKQ_Ready;       //遥控器
-extern u8 HL_Ready;        //护栏
-extern u8 PCB_Ready;       //PC棒
+extern u8 HL1_Ready;        //护栏
+extern u8 HL2_Ready;       //PC棒
 
 //存储WiFi参数
 extern u8 wifi_ssid[];                      
@@ -81,6 +81,6 @@ void get_ip_port(u8 *ip1,u16 data);             //获取字符串中的WiFi的IP地址和端
 void Flash_Read_STA(void);                      //在Flash内读取保存的路由器名称和密码
 void Flash_Read_AP(void);                       //在Flash内读取保存的热点名称和对应密码
 void Flash_Read_AP_IPPORT(void);                //在Flash内读取保存的IP地址和端口号
-
+void WIFIStateCheck(void);
 #endif
 
