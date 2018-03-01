@@ -21,6 +21,7 @@
 #include "initial.h"
 #include "string.h"
 
+
 int main(void)
 {
 	u8 num;        //记录连接的设备数
@@ -28,6 +29,8 @@ int main(void)
 	u8 key;        //按键扫描返回值
 	All_Init();	   //系统初始化 
 	
+	u16 i=0,j=0,k=0;
+
 	//清空串口2、串口WiFi接收寄存器
 	UART4_RX_LEN=0;
 	USART2_RX_LEN=0;
@@ -83,7 +86,7 @@ int main(void)
 				memcpy(RX_BUF,USART2_RX_BUF,15);
 				U2_FW();								 //复位功能模块
 			}			
-			if(strstr((const char *)USART2_RX_BUF,(const char *)"WIFISTA"))        
+			if(strstr((const char *)USART2_RX_BUF,(const char *)"WIFISTA"))
 			{	
 //				memset(USART2_RX_BUF,0,USART2_MAX_RECV_LEN);   //清除接收
 //				USART2_RX_LEN=0;               //清除标志位 

@@ -535,7 +535,7 @@ void ESP8266_AP_Init(u8 n)
 	 }
 	 	for(i=0;i<n;i++)		//最大循环次数设置为参数n
 	 {		 
-		 if(atk_8266_send_cmd("AT+CIPSTO=2400","OK",60))	//发送指令：AT+CWMODE=2
+		 if(atk_8266_send_cmd("AT+CIPSTO=500","OK",60))	//发送指令：AT+CWMODE=2
 		 {
 			u2_printf("\r\n超时时间设置成功\r\n");
 			break;
@@ -1219,6 +1219,7 @@ void WIFIStateCheck(void)
 	char *localName="ServerIP:192.168.1.115 端口号:8086\r\n";
 	char *p;
 	char *p1;
+	
 	char *p2;
 	u16 len=0;
 	u8 num;
