@@ -1723,29 +1723,7 @@ void Wifi_Send(u8 *data)
 	}
 }
 
-/***********************************************************************
- 函数名      ：Wifi_ToPC  
- 函数功能    ：WiFi向PC发送函数
- 输入        ：要发送的数据或指令
- 输出        ：无                      
-************************************************************************/
-void Wifi_ToPC(u8 *data)
-{
-	u16 i;
-	u8 n;	
-	if(HL2_Ready==1)
-	{
-		i=strlen((const char*)data);                //获取数据长度	
-		u4_printf("AT+CIPSEND=%d,%d\r\n",HL2,i);     //发送AT+CIPSEND指令
-		delay_ms(4);
-		memset(UART4_RX_BUF,0,20);	//清除串口4接收缓存区	
-		UART4_RX_LEN=0;             //串口4状态清零                
-		u4_printf("%s",data);       //发送数据字符数据data
-		delay_ms(200);				//延时200ms，芯片必须要求这个时间
-		memset(UART4_RX_BUF,0,20);	//清除串口4接收缓存区	
-		UART4_RX_LEN=0;				  		//串口4状态清零  		
-	}
-}
+
 
 /***********************************************************************
  函数名      ：WiFi_ToSJ  
@@ -1805,10 +1783,10 @@ void WiFi_ToHL(u8 *data)
 {
 	u16 i;
 	u8 n;	
-	if(HL1_Ready==1)
+	if(HLL_Ready==1)
 	{
 		i=strlen((const char*)data);                //获取数据长度	
-		u4_printf("AT+CIPSEND=%d,%d\r\n",HL1,i);     //发送AT+CIPSEND指令
+		u4_printf("AT+CIPSEND=%d,%d\r\n",HLL,i);     //发送AT+CIPSEND指令
 		delay_ms(4);
 		memset(UART4_RX_BUF,0,20);	 //清除串口4接收缓存区	
 		UART4_RX_LEN=0;             //串口4状态清零                  

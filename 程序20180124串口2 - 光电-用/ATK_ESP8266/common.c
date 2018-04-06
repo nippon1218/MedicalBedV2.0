@@ -6,16 +6,16 @@
 //默认设备号
 u8  SJ=6;       //手机app
 u8  YKQ=6;      //遥控器
-u8  HL1=6;       //护栏
-u8  HL2=6;       //PC机
+u8  HLL=6;       //护栏
+u8  HLR=6;       //PC机
 u8  Pad=6;      //Pad
 
 //设备连接状态 0：未连接；1：连接上
 u8 SJ_Ready=0;  //手机app
 u8 PC_Ready=0;  //PC
 u8 YKQ_Ready=0; //遥控器
-u8 HL1_Ready=0;  //护栏1
-u8 HL2_Ready=0; //护栏2
+u8 HLL_Ready=0;  //护栏1
+u8 HLR_Ready=0; //护栏2
 
 u8 ID_NUM;      //智能终端对应的设备号
 
@@ -1025,17 +1025,17 @@ void ESP8266_Get_Controler_Type(u16 timeout)
 
 			if(strstr((const char *)UART4_RX_BUF,(const char *)"Guard1"))  //护栏
 			{			
-				HL1= ID;		//绑定设备ID
-				HL1_Ready=1;//设备标志位置1
-				u2_printf("\r\nGuard=%d\r\n",HL1);					
+				HLL= ID;		//绑定设备ID
+				HLL_Ready=1;//设备标志位置1
+				u2_printf("\r\nGuard=%d\r\n",HLL);					
 				break;
 			}
 			
 			if(strstr((const char *)UART4_RX_BUF,(const char *)"Guard2"))  //电脑
 			{		
-				HL2 =ID;		//绑定设备ID
-				HL2_Ready=1;		//设备标志位置1				
-				u2_printf("\r\nHL2=%d\r\n",HL2);					
+				HLR =ID;		//绑定设备ID
+				HLR_Ready=1;		//设备标志位置1				
+				u2_printf("\r\nHLR=%d\r\n",HLR);					
 				break;
 			}
 		 }	
@@ -1066,11 +1066,11 @@ void ESP8266_Close_Controler_Type(void)
 	{SJ=6;SJ_Ready=0;u2_printf("恢复SJ\r\n");}
 	if(ID==YKQ)
 	{YKQ=6;YKQ_Ready=0;u2_printf("恢复YKQ\r\n");}
-	if(ID==HL1)
-	{HL1=6;	HL1_Ready=0;	u2_printf("恢复HL\r\n");}
-	if(ID==HL2)
-	{HL2=6;	HL2_Ready=0;	u2_printf("恢复PC\r\n");}	
-	u2_printf("\r\nPhone=%d,YKQ=%d,HL=%d,HL2=%d\r\n",SJ,YKQ,HL1,HL2);
+	if(ID==HLL)
+	{HLL=6;	HLL_Ready=0;	u2_printf("恢复HL\r\n");}
+	if(ID==HLR)
+	{HLR=6;	HLR_Ready=0;	u2_printf("恢复PC\r\n");}	
+	u2_printf("\r\nPhone=%d,YKQ=%d,HL=%d,HLR=%d\r\n",SJ,YKQ,HLL,HLR);
 }
 
 /***********************************************************************
@@ -1247,11 +1247,12 @@ void WIFIStateCheck(void)
 		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
 		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;
 		if(YKQ==0)
-		{
-			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
-		}		
+		{memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;}
+		if(HLL==0)
+		{memcpy(p,":(此设备为左护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
+		if(HLR==0)
+		{	memcpy(p,":(此设备为右护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
 		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
-		
 	}
 	if(strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:1"))
 	{
@@ -1264,9 +1265,11 @@ void WIFIStateCheck(void)
 		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
 		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;
 		if(YKQ==1)
-		{
-			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
-		}
+		{	memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
+		if(HLL==1)
+		{memcpy(p,":(此设备为左护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
+		if(HLR==1)
+		{	memcpy(p,":(此设备为右护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
 		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
 	}	
 	if(strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:2"))
@@ -1280,9 +1283,11 @@ void WIFIStateCheck(void)
 		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
 		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;	
 		if(YKQ==2)
-		{
-			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
-		}
+		{	memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
+		if(HLL==2)
+		{memcpy(p,":(此设备为左护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
+		if(HLR==2)
+		{	memcpy(p,":(此设备为右护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}		
 		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
 	}
 	if(strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:3"))
@@ -1296,9 +1301,11 @@ void WIFIStateCheck(void)
 		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
 		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;
 		if(YKQ==3)
-		{
-			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
-		}
+		{	memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
+		if(HLL==3)
+		{memcpy(p,":(此设备为左护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
+		if(HLR==3)
+		{	memcpy(p,":(此设备为右护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}		
 		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
 	}
 	if(strstr((const char *)UART4_RX_BUF,(const char *)"+CIPSTATUS:4"))
@@ -1312,9 +1319,11 @@ void WIFIStateCheck(void)
 		memcpy(p," 端口号:",8);len=strlen(WIFISTATE);p=WIFISTATE+len;
 		memcpy(p,p2+15,5);len=strlen(WIFISTATE);p=WIFISTATE+len;
 		if(YKQ==4)
-		{
-			memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;
-		}
+		{	memcpy(p,":(此设备为遥控器)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
+		if(HLL==4)
+		{memcpy(p,":(此设备为左护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}
+		if(HLR==4)
+		{	memcpy(p,":(此设备为右护栏)\r\n)",18);len=strlen(WIFISTATE);p=WIFISTATE+len;	}		
 		memcpy(p,"\r\n",2);len=strlen(WIFISTATE);p=WIFISTATE+len;
 	}
 	u2_printf("%s\r\n",WIFISTATE);	

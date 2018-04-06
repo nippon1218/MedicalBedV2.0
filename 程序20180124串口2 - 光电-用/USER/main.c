@@ -40,6 +40,9 @@ int main(void)
 	PCF8574_WriteBit(BEEP_IO,1);	//控制蜂鸣器停
 	while(1)
 	{	
+		
+//		u2_printf("***japan");
+//		delay_ms(500);
 /*****************************************************************************			
 		
 			             串口部分
@@ -82,14 +85,12 @@ int main(void)
 			}
 			//复位模块
 			if(strstr((const char *)USART2_RX_BUF,(const char *)"FW"))        
-			{			 
+			{
 				memcpy(RX_BUF,USART2_RX_BUF,15);
 				U2_FW();								 //复位功能模块
 			}			
 			if(strstr((const char *)USART2_RX_BUF,(const char *)"WIFISTA"))
 			{	
-//				memset(USART2_RX_BUF,0,USART2_MAX_RECV_LEN);   //清除接收
-//				USART2_RX_LEN=0;               //清除标志位 
 				WIFIStateCheck();
 			}	
 			
@@ -133,6 +134,16 @@ int main(void)
 				YKQ_Ready=1;		//设备标志位置1
 				u2_printf("\r\nRemote=%d\r\n",YKQ);					
 			}
+			if(strstr((const char *)UART4_RX_BUF,(const char *)"HLL"))  //遥控器
+			{		
+				u8 ID;
+				ID=UART4_RX_BUF[7]-48;
+				HLL =ID;		//绑定设备ID
+				YKQ_Ready=1;		//设备标志位置1
+				u2_printf("\r\nRemote=%d\r\n",YKQ);					
+			}
+			
+			
 			
 			if(strstr((const char *)UART4_RX_BUF,(const char *)"CONNECT")) 
 			{	
@@ -149,15 +160,12 @@ int main(void)
 			{
 				u8 ID;
 				ID=UART4_RX_BUF[0]-48;
-//				device_num--;									//wifi连接数目-1
 				PCF8574_WriteBit(BEEP_IO,0);	//蜂鸣器开	     
 				delay_ms(200);								//延时200ms
 				PCF8574_WriteBit(BEEP_IO,1);  //蜂鸣器关	
-//				ESP8266_Close_Controler_Type();
-				if(ID==YKQ)
-				{
-					YKQ=6;YKQ_Ready=0;
-				}
+				if(ID==YKQ){YKQ=6;YKQ_Ready=0;	}
+				if(ID==HLL){HLL=6;HLL_Ready=0;	}
+				if(ID==HLL){HLR=6;HLR_Ready=0;	}		
 				WIFIStateCheck();
 			}
 			if(strstr((const char *)UART4_RX_BUF,(const char *)"FWGD"))           

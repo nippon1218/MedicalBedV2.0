@@ -21,16 +21,16 @@
 //智能终端的名称
 extern u8  SJ;                 //手机app
 extern u8  YKQ;                //遥控器
-extern u8  HL1;                 //护栏
-extern u8  HL2;                 //PC机
+extern u8  HLL;                 //护栏
+extern u8  HLR;                 //PC机
 extern u8  Pad;                //Pad
 
 //智能终端是否准备好发送/接收数据
 extern u8 SJ_Ready;        //手机app
 extern u8 PC_Ready;        //PC机
 extern u8 YKQ_Ready;       //遥控器
-extern u8 HL1_Ready;        //护栏
-extern u8 HL2_Ready;       //PC棒
+extern u8 HLL_Ready;        //护栏
+extern u8 HLR_Ready;       //PC棒
 
 //存储WiFi参数
 extern u8 wifi_ssid[];                      
